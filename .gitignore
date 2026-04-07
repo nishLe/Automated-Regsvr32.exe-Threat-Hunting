@@ -1,6 +1,8 @@
-# Temporary Excel files
-~$*.xlsx
-~$*.xls
+# Virtual Environment
+.venv/
+venv/
+env/
+ENV/
 
 # Python cache
 __pycache__/
@@ -8,11 +10,26 @@ __pycache__/
 *$py.class
 *.so
 
-# Virtual environment
-venv/
-env/
+# Environment variables
+.env
+.env.local
+.env.*.local
 
 # IDE
 .vscode/
 .idea/
 *.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Excel temp files
+~$*.xlsx
+~$*.xls
+
+# Project temp files
+*.log
+temp/
+tmp/

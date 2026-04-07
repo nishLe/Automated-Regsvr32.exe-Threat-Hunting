@@ -1,0 +1,177 @@
+<?XML version="1.0"?>
+<!-- 
+    EDUCATIONAL PURPOSE ONLY - Computer System Security Research
+    
+    This scriptlet demonstrates the COM Scriptlet technique that can be abused
+    with regsvr32.exe for code execution. This is commonly used in:
+    - Red team assessments
+    - Security research
+    - Detection rule development
+    
+    Usage for testing:
+    Register:   regsvr32 /s /i comprehensive_scriptlet.sct
+    Unregister: regsvr32 /s /u /i comprehensive_scriptlet.sct
+    
+    Detection Opportunities:
+    - Monitor regsvr32.exe with network connections
+    - Monitor regsvr32.exe loading .sct files
+    - Monitor regsvr32.exe spawning child processes
+    - Check for regsvr32.exe with /i flag
+-->
+
+<scriptlet>
+
+<!-- REGISTRATION BLOCK - Executes during normal registration -->
+<registration
+    description="Security Research Component"
+    progid="TestComponent.SecurityResearch"
+    version="1.00"
+    classid="{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}"
+    remotable="true">
+    
+    <script language="VBScript">
+    <![CDATA[
+        ' This executes when registered with: regsvr32 /s /i scriptlet.sct
+        
+        Function RegisterComponent()
+            On Error Resume Next
+            
+            ' Log registration attempt
+            Set objFSO = CreateObject("Scripting.FileSystemObject")
+            Set objShell = CreateObject("WScript.Shell")
+            
+            ' Get script path
+            scriptPath = objShell.CurrentDirectory
+            
+            ' Log file
+            logFile = scriptPath & "\registration_log.txt"
+            Set objLog = objFSO.OpenTextFile(logFile, 8, True)
+            objLog.WriteLine "Registration executed at: " & Now()
+            objLog.WriteLine "User: " & objShell.ExpandEnvironmentStrings("%USERNAME%")
+            objLog.WriteLine "Computer: " & objShell.ExpandEnvironmentStrings("%COMPUTERNAME%")
+            objLog.WriteLine "----------------------------------------"
+            objLog.Close
+            
+            ' Visual confirmation
+            MsgBox "Component Registered Successfully" & vbCrLf & _
+                   "Time: " & Now() & vbCrLf & _
+                   "This is the REGISTRATION block", _
+                   vbInformation, "Registration"
+            
+            ' Example benign action
+            objShell.Run "notepad.exe", 1, False
+            
+            Set objFSO = Nothing
+            Set objShell = Nothing
+        End Function
+        
+        ' Execute registration
+        RegisterComponent()
+    ]]>
+    </script>
+</registration>
+
+<!-- UNREGISTRATION BLOCK - Executes during unregistration -->
+<public>
+    <method name="Unregister">
+        <script language="VBScript">
+        <![CDATA[
+            ' This executes when unregistered with: regsvr32 /s /u /i scriptlet.sct
+            ' IMPORTANT: This is often where malicious code is placed in real attacks
+            
+            Function UnregisterComponent()
+                On Error Resume Next
+                
+                Set objFSO = CreateObject("Scripting.FileSystemObject")
+                Set objShell = CreateObject("WScript.Shell")
+                Set objNetwork = CreateObject("WScript.Network")
+                
+                ' Get environment information
+                scriptPath = objShell.CurrentDirectory
+                userName = objNetwork.UserName
+                computerName = objNetwork.ComputerName
+                
+                ' Log unregistration attempt
+                logFile = scriptPath & "\unregistration_log.txt"
+                Set objLog = objFSO.OpenTextFile(logFile, 8, True)
+                objLog.WriteLine "Unregistration executed at: " & Now()
+                objLog.WriteLine "User: " & userName
+                objLog.WriteLine "Computer: " & computerName
+                objLog.WriteLine "Process: regsvr32.exe"
+                objLog.WriteLine "----------------------------------------"
+                objLog.Close
+                
+                ' Visual confirmation
+                MsgBox "Component Unregistered" & vbCrLf & _
+                       "Time: " & Now() & vbCrLf & _
+                       "User: " & userName & vbCrLf & _
+                       "This is the UNREGISTRATION block" & vbCrLf & vbCrLf & _
+                       "NOTE: In real attacks, malicious code executes here!", _
+                       vbExclamation, "Unregistration"
+                
+                ' Example actions (benign for testing)
+                ' In real attacks, this could be:
+                ' - Reverse shells
+                ' - Download and execute
+                ' - Credential theft
+                ' - Lateral movement
+                
+                ' Example 1: Open Calculator
+                objShell.Run "calc.exe", 1, False
+                
+                ' Example 2: System information
+                objShell.Run "cmd.exe /c systeminfo > " & scriptPath & "\sysinfo.txt", 0, False
+                
+                ' Example 3: Create marker file
+                Set objMarker = objFSO.CreateTextFile(scriptPath & "\unregister_executed.txt", True)
+                objMarker.WriteLine "Unregistration executed successfully"
+                objMarker.WriteLine "Timestamp: " & Now()
+                objMarker.Close
+                
+                ' Cleanup
+                Set objFSO = Nothing
+                Set objShell = Nothing
+                Set objNetwork = Nothing
+            End Function
+            
+            ' Execute unregistration
+            UnregisterComponent()
+        ]]>
+        </script>
+    </method>
+</public>
+
+<!-- ADDITIONAL PUBLIC METHODS (optional) -->
+<public>
+    <method name="TestMethod">
+        <script language="VBScript">
+        <![CDATA[
+            Function TestExecute()
+                MsgBox "Test method executed", vbInformation, "Test"
+            End Function
+            
+            TestExecute()
+        ]]>
+        </script>
+    </method>
+</public>
+
+<!-- SCRIPT SECTION - Can contain additional code -->
+<script language="VBScript">
+<![CDATA[
+    ' Global variables and helper functions
+    
+    Function GetScriptInfo()
+        Dim info
+        info = "Scriptlet Information:" & vbCrLf
+        info = info & "Version: 1.0" & vbCrLf
+        info = info & "Purpose: Security Research" & vbCrLf
+        info = info & "Created: 2025" & vbCrLf
+        GetScriptInfo = info
+    End Function
+    
+    ' Additional helper functions can be defined here
+]]>
+</script>
+
+</scriptlet>

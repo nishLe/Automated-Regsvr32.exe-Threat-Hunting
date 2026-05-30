@@ -1,4 +1,4 @@
-# Regsvr32 Threat Hunting Exporter
+# Regsvr32 Threat Hunting LOLBin Abuse
 
 This tool queries Elasticsearch for suspicious regsvr32 activity on Windows and exports results to an Excel workbook with a general sheet plus per-rule query and validation sheets.
 
